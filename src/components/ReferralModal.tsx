@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { api, endpoints } from '@/lib/api';
 
 const formSchema = z.object({
   referrerName: z.string().min(2, "Name must be at least 2 characters"),
@@ -48,27 +49,15 @@ export function ReferralModal({
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch('http://localhost:5000/api/referrals', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          referrerName: data.referrerName,
-          referrerEmail: data.referrerEmail,
-          refereeName: data.friendName,
-          refereeEmail: data.friendEmail,
-          courseName: data.course
-        }),
+      const response = await api.post(endpoints.referrals, {
+        referrerName: data.referrerName,
+        referrerEmail: data.referrerEmail,
+        refereeName: data.friendName,
+        refereeEmail: data.friendEmail,
+        courseName: data.course
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to submit referral');
-      }
-
-      const result = await response.json();
-      
-      if (result.success) {
+      if (response.data.success) {
         toast({
           title: "Referral submitted successfully!",
           description: "We'll notify your friend about this amazing opportunity.",
@@ -76,7 +65,7 @@ export function ReferralModal({
         reset();
         onClose();
       } else {
-        throw new Error(result.message || 'Failed to submit referral');
+        throw new Error(response.data.message || 'Failed to submit referral');
       }
     } catch (error) {
       console.error('Referral submission error:', error);
