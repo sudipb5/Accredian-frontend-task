@@ -17,13 +17,13 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  optimizeDeps: {
-    include: ['axios']
-  },
   build: {
-    commonjsOptions: {
-      include: [/node_modules/],
-      transformMixedEsModules: true
-    }
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['axios', 'react', 'react-dom'],
+        },
+      },
+    },
   }
 }));
