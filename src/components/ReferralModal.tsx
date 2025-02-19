@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -49,15 +48,38 @@ export function ReferralModal({
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
-      // In a real app, this would be an API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      toast({
-        title: "Referral submitted successfully!",
-        description: "We'll notify your friend about this amazing opportunity.",
+      const response = await fetch('http://localhost:5000/api/referrals', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          referrerName: data.referrerName,
+          referrerEmail: data.referrerEmail,
+          refereeName: data.friendName,
+          refereeEmail: data.friendEmail,
+          courseName: data.course
+        }),
       });
-      reset();
-      onClose();
+
+      if (!response.ok) {
+        throw new Error('Failed to submit referral');
+      }
+
+      const result = await response.json();
+      
+      if (result.success) {
+        toast({
+          title: "Referral submitted successfully!",
+          description: "We'll notify your friend about this amazing opportunity.",
+        });
+        reset();
+        onClose();
+      } else {
+        throw new Error(result.message || 'Failed to submit referral');
+      }
     } catch (error) {
+      console.error('Referral submission error:', error);
       toast({
         variant: "destructive",
         title: "Something went wrong",
